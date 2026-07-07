@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: workflowpro
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/workflowpro?createDatabaseIfNotExist=true&serverTimezone=UTC}
+    username: ${DB_USERNAME:workflowpro}
+    password: ${DB_PASSWORD:workflowpro}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+server:
+  error:
+    include-message: never
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:V29ya0Zsb3dQcm9EZXZlbG9wbWVudFNlY3JldEtleUZvckpXVFRva2Vucw==}
+    expiration: ${JWT_EXPIRATION:86400000}
+  mail:
+    enabled: ${MAIL_ENABLED:false}
