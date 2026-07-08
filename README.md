@@ -39,6 +39,14 @@ The API will be available at:
 http://localhost:8080
 ```
 
+The interactive frontend is served by the same Spring Boot app:
+
+```text
+http://localhost:8080/
+```
+
+It uses the backend APIs directly and stores the JWT in browser local storage after login.
+
 ## Run tests
 
 ```bash

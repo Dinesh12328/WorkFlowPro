@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>WorkFlowPro</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<div class="background-glow"></div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<header class="topbar">
+    <div class="brand">
+        <span class="brand-mark">W</span>
+        <div>
+            <strong>WorkFlowPro</strong>
+            <span>Project and task command center</span>
+        </div>
+    </div>
+    <div class="session-pill" id="sessionPill" hidden>
+        <span id="userName">Signed in</span>
+        <button class="ghost-button" id="logoutButton" type="button">Logout</button>
+    </div>
+</header>
+
+<main>
+    <section id="authView" class="auth-shell">
+        <div class="hero-card">
+            <span class="eyebrow">Interactive frontend</span>
+            <h1>Plan projects, assign tasks, and keep every deadline visible.</h1>
+            <p>
+                This UI talks directly to your Spring Boot API. Register, create projects,
+                assign tasks, comment, track status, and review dashboard stats from one screen.
+            </p>
+            <div class="hero-grid">
+                <span>JWT login</span>
+                <span>Task filters</span>
+                <span>Comments</span>
+                <span>Notifications</span>
+            </div>
+        </div>
+
+        <div class="auth-card">
+            <div class="tabs" role="tablist" aria-label="Authentication">
+                <button class="tab active" type="button" data-auth-tab="login">Login</button>
+                <button class="tab" type="button" data-auth-tab="register">Register</button>
+            </div>
+
+            <form id="loginForm" class="form-stack">
+                <label>
+                    Email
+                    <input name="email" type="email" autocomplete="email" required placeholder="you@example.com">
+                </label>
+                <label>
+                    Password
+                    <input name="password" type="password" autocomplete="current-password" required placeholder="Minimum 8 characters">
+                </label>
+                <button class="primary-button" type="submit">Login</button>
+            </form>
+
+            <form id="registerForm" class="form-stack" hidden>
+                <label>
+                    Name
+                    <input name="name" type="text" autocomplete="name" required placeholder="Dinesh">
+                </label>
+                <label>
+                    Email
+                    <input name="email" type="email" autocomplete="email" required placeholder="you@example.com">
+                </label>
+                <label>
+                    Password
+                    <input name="password" type="password" autocomplete="new-password" minlength="8" required placeholder="Minimum 8 characters">
+                </label>
+                <button class="primary-button" type="submit">Create account</button>
+            </form>
+        </div>
+    </section>
+
+    <section id="appView" class="app-shell" hidden>
+        <aside class="control-panel">
+            <section class="panel-card">
+                <div class="section-title">
+                    <span>Dashboard</span>
+                    <button class="small-button" id="refreshButton" type="button">Refresh</button>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card"><strong data-stat="totalProjects">0</strong><span>Projects</span></div>
+                    <div class="stat-card"><strong data-stat="totalTasks">0</strong><span>Tasks</span></div>
+                    <div class="stat-card"><strong data-stat="assignedToMe">0</strong><span>Assigned to me</span></div>
+                    <div class="stat-card warning"><strong data-stat="overdue">0</strong><span>Overdue</span></div>
+                    <div class="stat-card"><strong data-stat="dueInNextSevenDays">0</strong><span>Due soon</span></div>
+                    <div class="stat-card"><strong data-stat="unreadNotifications">0</strong><span>Unread</span></div>
+                </div>
+            </section>
+
+            <section class="panel-card">
+                <div class="section-title">
+                    <span>Create project</span>
+                </div>
+                <form id="projectForm" class="form-stack compact">
+                    <label>
+                        Project name
+                        <input name="name" required maxlength="150" placeholder="Website relaunch">
+                    </label>
+                    <label>
+                        Description
+                        <textarea name="description" maxlength="2000" rows="3" placeholder="What are we building?"></textarea>
+                    </label>
+                    <div>
+                        <span class="field-label">Members</span>
+                        <div id="projectMembers" class="choice-list muted-box">No users loaded yet.</div>
+                    </div>
+                    <button class="primary-button" type="submit">Create project</button>
+                </form>
+            </section>
+
+            <section class="panel-card">
+                <div class="section-title">
+                    <span>Create task</span>
+                </div>
+                <form id="taskForm" class="form-stack compact">
+                    <label>
+                        Title
+                        <input name="title" required maxlength="200" placeholder="Prepare API docs">
+                    </label>
+                    <label>
+                        Project
+                        <select name="projectId" required></select>
+                    </label>
+                    <label>
+                        Assignee
+                        <select name="assigneeId"></select>
+                    </label>
+                    <div class="two-column">
+                        <label>
+                            Priority
+                            <select name="priority">
+                                <option>LOW</option>
+                                <option selected>MEDIUM</option>
+                                <option>HIGH</option>
+                            </select>
+                        </label>
+                        <label>
+                            Status
+                            <select name="status">
+                                <option selected>TODO</option>
+                                <option>IN_PROGRESS</option>
+                                <option>COMPLETED</option>
+                            </select>
+                        </label>
+                    </div>
+                    <label>
+                        Due date
+                        <input name="dueDate" type="date">
+                    </label>
+                    <label>
+                        Description
+                        <textarea name="description" maxlength="5000" rows="3" placeholder="Add useful details"></textarea>
+                    </label>
+                    <button class="primary-button" type="submit">Create task</button>
+                </form>
+            </section>
+        </aside>
+
+        <section class="workspace">
+            <section class="panel-card">
+                <div class="section-title">
+                    <span>Task filters</span>
+                    <button class="small-button" id="clearFiltersButton" type="button">Clear</button>
+                </div>
+                <form id="filterForm" class="filter-grid">
+                    <label>
+                        Status
+                        <select name="status">
+                            <option value="">Any</option>
+                            <option>TODO</option>
+                            <option>IN_PROGRESS</option>
+                            <option>COMPLETED</option>
+                        </select>
+                    </label>
+                    <label>
+                        Priority
+                        <select name="priority">
+                            <option value="">Any</option>
+                            <option>LOW</option>
+                            <option>MEDIUM</option>
+                            <option>HIGH</option>
+                        </select>
+                    </label>
+                    <label>
+                        Project
+                        <select name="projectId"></select>
+                    </label>
+                    <label>
+                        Assignee
+                        <select name="assigneeId"></select>
+                    </label>
+                    <label>
+                        Due from
+                        <input name="dueFrom" type="date">
+                    </label>
+                    <label>
+                        Due to
+                        <input name="dueTo" type="date">
+                    </label>
+                    <button class="primary-button" type="submit">Apply filters</button>
+                </form>
+            </section>
+
+            <section class="split-grid">
+                <div class="panel-card">
+                    <div class="section-title">
+                        <span>Tasks</span>
+                        <span id="taskCount" class="subtle">0 visible</span>
+                    </div>
+                    <div id="taskList" class="task-list empty-state">No tasks yet. Create one from the left panel.</div>
+                </div>
+
+                <div class="side-stack">
+                    <section class="panel-card">
+                        <div class="section-title">
+                            <span>Projects</span>
+                            <span id="projectCount" class="subtle">0</span>
+                        </div>
+                        <div id="projectList" class="mini-list empty-state">No projects yet.</div>
+                    </section>
+
+                    <section class="panel-card">
+                        <div class="section-title">
+                            <span>Notifications</span>
+                            <span id="notificationCount" class="subtle">0</span>
+                        </div>
+                        <div id="notificationsList" class="mini-list empty-state">No notifications.</div>
+                    </section>
+
+                    <section class="panel-card">
+                        <div class="section-title">
+                            <span>Users</span>
+                            <span id="userCount" class="subtle">0</span>
+                        </div>
+                        <div id="userList" class="mini-list empty-state">No users loaded.</div>
+                    </section>
+                </div>
+            </section>
+        </section>
+    </section>
+</main>
+
+<script src="/app.js"></script>
+</body>
+</html>
