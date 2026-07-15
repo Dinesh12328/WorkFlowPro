@@ -55,6 +55,29 @@ mvn test
 
 Tests use an in-memory H2 database and disabled email sending.
 
+## Run from IntelliJ IDEA without MySQL
+
+For quick local testing in IntelliJ, use the `dev` profile. This uses an in-memory H2 database, so you can press Run without starting MySQL.
+
+In IntelliJ:
+
+1. Open `WorkflowProApplication.java`.
+2. Open the run configuration.
+3. Add this VM option:
+
+```text
+-Dspring.profiles.active=dev
+```
+
+4. Run the app.
+5. Open:
+
+```text
+http://localhost:8080/
+```
+
+If you open API URLs like `/api/projects` directly in the browser before login, Spring Security will deny access. Open `/`, register/login, then use the UI.
+
 ## Authentication
 
 Register or log in first:

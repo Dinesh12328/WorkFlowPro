@@ -35,11 +35,13 @@ public class SecurityConfig {
                                 "/styles.css",
                                 "/app.js",
                                 "/favicon.ico",
+                                "/h2-console/**",
                                 "/api/auth/**",
                                 "/actuator/health"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
+                .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.sameOrigin()))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }

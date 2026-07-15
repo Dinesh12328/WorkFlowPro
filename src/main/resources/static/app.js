@@ -1,5 +1,6 @@
 const TOKEN_KEY = "workflowpro.token";
 const USER_KEY = "workflowpro.user";
+const REFRESH_INTERVAL_MS = 30000;
 const STAT_KEYS = [
     "totalProjects",
     "totalTasks",
@@ -17,7 +18,8 @@ const state = {
     tasks: [],
     notifications: [],
     comments: new Map(),
-    attachments: new Map()
+    attachments: new Map(),
+    refreshTimer: null
 };
 
 const $ = (selector) => document.querySelector(selector);
@@ -87,7 +89,12 @@ function bindApp() {
         showAuth();
     });
 
-    $("#refreshButton").addEventListener("click", () => refreshAll());
+    $("#refreshButton").addEventListener("click", async () => {
+        await refreshAll();
+        notify("Latest data loaded.", "success");
+    });
+
+    $("#taskForm select[name='projectId']").addEventListener("change", renderTaskAssigneeOptions);
 
     $("#projectForm").addEventListener("submit", async (event) => {
         event.preventDefault();
@@ -113,6 +120,10 @@ function bindApp() {
     $("#taskForm").addEventListener("submit", async (event) => {
         event.preventDefault();
         const values = formValues(event.currentTarget);
+        if (!values.projectId) {
+            notify("Create a project before adding tasks.", "error");
+            return;
+        }
         try {
             await api("/api/tasks", {
                 method: "POST",
@@ -128,6 +139,7 @@ function bindApp() {
             });
             event.currentTarget.reset();
             await refreshAll();
+            renderTaskAssigneeOptions();
             notify("Task created.", "success");
         } catch (error) {
             notify(error.message, "error");
@@ -155,6 +167,7 @@ async function startApp() {
     localStorage.setItem(USER_KEY, JSON.stringify(state.me));
     renderSession();
     await refreshAll();
+    startAutoRefresh();
 }
 
 async function refreshAll() {
@@ -167,6 +180,7 @@ async function refreshAll() {
             loadNotifications()
         ]);
         await loadTasks();
+        setLastUpdated();
     } catch (error) {
         notify(error.message, "error");
     }
@@ -177,13 +191,15 @@ async function loadUsers() {
     state.users = page.content || [];
     renderUsers();
     renderMemberChoices();
-    renderAssigneeOptions();
+    renderFilterAssigneeOptions();
+    renderTaskAssigneeOptions();
 }
 
 async function loadProjects() {
     state.projects = await api("/api/projects");
     renderProjects();
     renderProjectOptions();
+    renderTaskAssigneeOptions();
 }
 
 async function loadTasks() {
@@ -365,15 +381,40 @@ function renderMemberChoices() {
 function renderProjectOptions() {
     const taskProject = $("#taskForm select[name='projectId']");
     const filterProject = $("#filterForm select[name='projectId']");
+    const selectedTaskProject = taskProject.value;
+    const selectedFilterProject = filterProject.value;
     const options = state.projects.map((project) => `<option value="${project.id}">${escapeHtml(project.name)}</option>`).join("");
     taskProject.innerHTML = options || `<option value="">Create a project first</option>`;
     filterProject.innerHTML = `<option value="">Any</option>${options}`;
+    if (selectedTaskProject && state.projects.some((project) => String(project.id) === selectedTaskProject)) {
+        taskProject.value = selectedTaskProject;
+    }
+    if (selectedFilterProject && state.projects.some((project) => String(project.id) === selectedFilterProject)) {
+        filterProject.value = selectedFilterProject;
+    }
 }
 
-function renderAssigneeOptions() {
+function renderFilterAssigneeOptions() {
     const options = state.users.map((user) => `<option value="${user.id}">${escapeHtml(user.name)}</option>`).join("");
-    $("#taskForm select[name='assigneeId']").innerHTML = `<option value="">Unassigned</option>${options}`;
     $("#filterForm select[name='assigneeId']").innerHTML = `<option value="">Any</option>${options}`;
+}
+
+function renderTaskAssigneeOptions() {
+    const taskProject = $("#taskForm select[name='projectId']");
+    const assigneeSelect = $("#taskForm select[name='assigneeId']");
+    const project = state.projects.find((item) => String(item.id) === taskProject.value);
+    const previous = assigneeSelect.value;
+    const allowedUsers = project
+        ? [project.owner, ...project.members].filter(Boolean)
+        : state.me ? [state.me] : [];
+    const uniqueUsers = Array.from(new Map(allowedUsers.map((user) => [user.id, user])).values());
+    const options = uniqueUsers
+        .map((user) => `<option value="${user.id}">${escapeHtml(user.name)}</option>`)
+        .join("");
+    assigneeSelect.innerHTML = `<option value="">Unassigned</option>${options}`;
+    if (previous && uniqueUsers.some((user) => String(user.id) === previous)) {
+        assigneeSelect.value = previous;
+    }
 }
 
 function renderProjects() {
@@ -565,6 +606,7 @@ function setSession(auth) {
 }
 
 function endSession(showMessage) {
+    stopAutoRefresh();
     state.token = null;
     state.me = null;
     state.users = [];
@@ -611,6 +653,33 @@ function notify(message, type = "") {
     notify.timer = window.setTimeout(() => {
         toast.className = "toast";
     }, 3600);
+}
+
+function startAutoRefresh() {
+    stopAutoRefresh();
+    state.refreshTimer = window.setInterval(() => {
+        if (!document.hidden && state.token) {
+            refreshAll();
+        }
+    }, REFRESH_INTERVAL_MS);
+}
+
+function stopAutoRefresh() {
+    if (state.refreshTimer) {
+        window.clearInterval(state.refreshTimer);
+        state.refreshTimer = null;
+    }
+}
+
+function setLastUpdated() {
+    const target = $("#lastUpdated");
+    if (target) {
+        target.textContent = `Synced ${new Intl.DateTimeFormat(undefined, {
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit"
+        }).format(new Date())}`;
+    }
 }
 
 function escapeHtml(value) {

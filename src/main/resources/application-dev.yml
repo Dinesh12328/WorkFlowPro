@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:h2:mem:workflowpro;MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE
+    url: jdbc:h2:mem:workflowpro-dev;MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE
     username: sa
     password:
     driver-class-name: org.h2.Driver
@@ -8,11 +8,13 @@ spring:
     hibernate:
       ddl-auto: create-drop
     open-in-view: false
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
   mail:
     host: localhost
+
 app:
-  jwt:
-    secret: V29ya0Zsb3dQcm9EZXZlbG9wbWVudFNlY3JldEtleUZvckpXVFRva2Vucw==
-    expiration: 86400000
   mail:
     enabled: false
