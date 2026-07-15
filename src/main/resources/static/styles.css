@@ -772,12 +772,18 @@ small,
 
 .drawer-icon {
     display: grid;
-    width: 3rem;
-    height: 3rem;
+    width: fit-content;
+    min-width: 3rem;
+    height: 2.3rem;
     margin: 0 auto 0.7rem;
     place-items: center;
     border-radius: var(--radius-md);
+    padding: 0 0.8rem;
     background: rgba(6, 182, 212, 0.14);
+    color: #a5f3fc;
+    font-size: 0.78rem;
+    font-weight: 950;
+    text-transform: uppercase;
 }
 
 .drawer-section {

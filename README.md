@@ -1,6 +1,6 @@
 # WorkFlowPro Task Management System
 
-WorkFlowPro is a full-stack task and project management application built with Spring Boot. It allows users to create projects, add project members, create and assign tasks, track task status, manage priorities and due dates, add comments, store attachment links, receive notifications, and view dashboard statistics from an interactive web interface.
+WorkFlowPro is a full-stack task and project management application built with Spring Boot. It allows users to create projects, add project members, create and assign tasks, track task status, manage priorities and due dates, add comments, save attachment links, receive notifications, and view dashboard statistics from an interactive web interface.
 
 The application includes both:
 
@@ -77,7 +77,7 @@ The frontend is available at:
 http://localhost:8080/
 ```
 
-It connects directly to the backend APIs and stores the JWT in browser local storage after login.
+It connects directly to the backend APIs and keeps the login token in browser local storage after login.
 
 Frontend screens and interactions:
 
@@ -437,7 +437,7 @@ Main variables used by Docker and Spring Boot:
 
 - API routes are protected with JWT.
 - Frontend files and `/api/auth/**` are public.
-- Passwords are stored using BCrypt hashing.
+- Password hashes use BCrypt.
 - Users can only view projects where they are the owner or member.
 - Only project owners can manage projects.
 - Task assignees must be the project owner or a project member.

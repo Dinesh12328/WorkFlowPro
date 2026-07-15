@@ -18,7 +18,7 @@
             <h1>Manage projects, tasks, comments, and deadlines from one interactive dashboard.</h1>
             <p>
                 Sign in to open the live workspace. The interface connects directly to the Spring Boot APIs,
-                stores your JWT locally, and refreshes your project data automatically.
+                keeps your login session locally, and refreshes your project data automatically.
             </p>
             <div class="hero-grid">
                 <span>Kanban board</span>
@@ -295,7 +295,7 @@
 
         <aside id="taskDrawer" class="task-drawer" aria-live="polite">
             <div class="drawer-empty">
-                <span class="drawer-icon">↗</span>
+                <span class="drawer-icon">Open</span>
                 <h3>Select a task</h3>
                 <p>Open any task card to edit details, add comments, or attach useful links.</p>
             </div>
@@ -310,7 +310,7 @@
                 <span class="eyebrow">Project</span>
                 <h3>Create project</h3>
             </div>
-            <button class="icon-button" type="button" data-close-modal aria-label="Close">×</button>
+            <button class="icon-button" type="button" data-close-modal aria-label="Close">&times;</button>
         </div>
         <form id="projectForm" class="form-stack compact">
             <label>
@@ -335,7 +335,7 @@
                 <span class="eyebrow">Task</span>
                 <h3>Create task</h3>
             </div>
-            <button class="icon-button" type="button" data-close-modal aria-label="Close">×</button>
+            <button class="icon-button" type="button" data-close-modal aria-label="Close">&times;</button>
         </div>
         <form id="taskForm" class="form-stack compact">
             <label>

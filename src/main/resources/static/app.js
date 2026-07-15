@@ -474,7 +474,7 @@ function renderTaskDrawer() {
         drawer.classList.remove("open");
         drawer.innerHTML = `
             <div class="drawer-empty">
-                <span class="drawer-icon">↗</span>
+                <span class="drawer-icon">Open</span>
                 <h3>Select a task</h3>
                 <p>Open any task card to edit details, add comments, or attach useful links.</p>
             </div>
@@ -495,7 +495,7 @@ function renderTaskDrawer() {
                 <h3>${escapeHtml(task.title)}</h3>
                 <small>${escapeHtml(task.projectName)} - ${task.assignee ? escapeHtml(task.assignee.name) : "Unassigned"}</small>
             </div>
-            <button class="icon-button" type="button" data-close-drawer aria-label="Close">×</button>
+            <button class="icon-button" type="button" data-close-drawer aria-label="Close">&times;</button>
         </div>
 
         <form class="drawer-section" data-task-edit-form data-task-id="${task.id}">
@@ -1128,7 +1128,7 @@ function escapeAttribute(value) {
 
 function shorten(value, length) {
     const text = String(value || "");
-    return text.length > length ? `${text.slice(0, length - 1)}…` : text;
+    return text.length > length ? `${text.slice(0, length - 3)}...` : text;
 }
 
 function localDateString(date) {
