@@ -12,6 +12,7 @@ WorkFlowPro is a Spring Boot backend for task and project management. It support
 - Attachment metadata for task files
 - In-app notification records plus optional email notifications for assigned tasks
 - Dashboard totals for projects, tasks, assigned work, overdue work, upcoming deadlines, unread notifications, status counts, and priority counts
+- Interactive frontend with login/register, sidebar navigation, dashboard cards, Kanban task board, drag-and-drop status updates, task detail drawer, project/team views, comments, attachment links, notifications, and auto-refresh
 - Docker setup with MySQL
 
 ## Tech stack
@@ -46,6 +47,15 @@ http://localhost:8080/
 ```
 
 It uses the backend APIs directly and stores the JWT in browser local storage after login.
+
+Frontend highlights:
+
+- Dashboard overview with live project/task/notification stats
+- Kanban task board with drag-and-drop status changes
+- Modal forms for creating projects and tasks
+- Task detail drawer for editing tasks, comments, and attachment links
+- Project, team, notification, search, and filter views
+- Auto-refresh with visible sync status
 
 ## Run tests
 
