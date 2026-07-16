@@ -19,6 +19,7 @@ services:
   api:
     build: .
     environment:
+      SPRING_PROFILES_ACTIVE: mysql
       DB_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-workflowpro}?createDatabaseIfNotExist=true&serverTimezone=UTC
       DB_USERNAME: ${MYSQL_USER:-workflowpro}
       DB_PASSWORD: ${MYSQL_PASSWORD:-workflowpro}

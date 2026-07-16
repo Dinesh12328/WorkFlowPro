@@ -6,8 +6,8 @@ The project contains:
 
 - A Spring Boot REST API backend.
 - A browser-based interactive frontend served from the same application.
-- MySQL support for normal running.
-- H2 support for quick local development and testing.
+- H2 support for quick local running in IntelliJ.
+- MySQL support for Docker and production-style running.
 
 After starting the application, open:
 
@@ -252,7 +252,7 @@ sort
 
 ## Run with Docker
 
-Use Docker when you want the full application with MySQL.
+Use Docker when you want the full application with MySQL. The Docker setup automatically runs the Spring Boot app with the `mysql` profile.
 
 1. Create a `.env` file from `.env.example`.
 
@@ -284,7 +284,7 @@ docker compose down -v
 
 ## Run in IntelliJ IDEA
 
-For easy local development, run with the `dev` profile. This uses H2 in-memory database, so MySQL is not required.
+For easy local development, run the application normally. The default configuration uses an H2 in-memory database, so MySQL is not required.
 
 Steps:
 
@@ -297,21 +297,14 @@ Steps:
 src/main/java/com/workflowpro/WorkflowProApplication.java
 ```
 
-5. Edit the run configuration.
-6. Add this VM option:
-
-```text
--Dspring.profiles.active=dev
-```
-
-7. Run the application.
-8. Open:
+5. Run the application.
+6. Open:
 
 ```text
 http://localhost:8080/
 ```
 
-H2 console in dev mode:
+H2 console:
 
 ```text
 http://localhost:8080/h2-console
@@ -330,7 +323,7 @@ Password:
 If MySQL is already running on your computer:
 
 ```bash
-mvn spring-boot:run
+mvn -Dspring-boot.run.profiles=mysql spring-boot:run
 ```
 
 Default database settings:
@@ -339,6 +332,12 @@ Default database settings:
 Database: workflowpro
 Username: workflowpro
 Password: workflowpro
+```
+
+In IntelliJ IDEA, use this VM option when you specifically want local MySQL instead of H2:
+
+```text
+-Dspring.profiles.active=mysql
 ```
 
 ## Run tests
@@ -379,6 +378,8 @@ Common environment variables:
 | `DB_URL` | Spring datasource URL |
 | `DB_USERNAME` | Spring datasource username |
 | `DB_PASSWORD` | Spring datasource password |
+| `DB_DRIVER` | Spring datasource driver class |
+| `DDL_AUTO` | Hibernate schema update mode |
 | `JWT_SECRET` | JWT signing secret |
 | `JWT_EXPIRATION` | JWT expiry time |
 | `MAIL_ENABLED` | Enable/disable email notification |
@@ -415,10 +416,16 @@ Protected API routes need a JWT token.
 
 ### App does not start in IntelliJ
 
-If MySQL is not running, use:
+The default IntelliJ run uses H2 and should not need MySQL. If you still see a MySQL access error, check the run configuration and remove this VM option:
 
 ```text
--Dspring.profiles.active=dev
+-Dspring.profiles.active=mysql
+```
+
+After removing it, run the application again and open:
+
+```text
+http://localhost:8080/
 ```
 
 ### Docker port is already used

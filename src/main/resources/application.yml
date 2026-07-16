@@ -2,18 +2,23 @@ spring:
   application:
     name: workflowpro
   datasource:
-    url: ${DB_URL:jdbc:mysql://localhost:3306/workflowpro?createDatabaseIfNotExist=true&serverTimezone=UTC}
-    username: ${DB_USERNAME:workflowpro}
-    password: ${DB_PASSWORD:workflowpro}
+    url: ${DB_URL:jdbc:h2:mem:workflowpro-dev;MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE}
+    username: ${DB_USERNAME:sa}
+    password: ${DB_PASSWORD:}
+    driver-class-name: ${DB_DRIVER:org.h2.Driver}
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: ${DDL_AUTO:create-drop}
     open-in-view: false
     properties:
       hibernate:
         format_sql: true
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
   mail:
-    host: ${MAIL_HOST:smtp.gmail.com}
+    host: ${MAIL_HOST:localhost}
     port: ${MAIL_PORT:587}
     username: ${MAIL_USERNAME:}
     password: ${MAIL_PASSWORD:}

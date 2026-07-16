@@ -1,0 +1,18 @@
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/workflowpro?createDatabaseIfNotExist=true&serverTimezone=UTC}
+    username: ${DB_USERNAME:workflowpro}
+    password: ${DB_PASSWORD:workflowpro}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: ${DDL_AUTO:update}
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+  h2:
+    console:
+      enabled: false
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
