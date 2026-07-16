@@ -51,6 +51,7 @@ public class ProjectService {
         User user = currentUserService.get();
         Project project = accessService.requireManage(id, user);
         apply(project, request, project.getOwner());
+        clearAssignmentsForRemovedMembers(project);
         return ProjectResponse.from(project);
     }
 
@@ -70,5 +71,18 @@ public class ProjectService {
         }
         members.removeIf(member -> member.getId().equals(owner.getId()));
         project.setMembers(members);
+    }
+
+    private void clearAssignmentsForRemovedMembers(Project project) {
+        Set<Long> allowedAssigneeIds = new HashSet<>();
+        allowedAssigneeIds.add(project.getOwner().getId());
+        project.getMembers().forEach(member -> allowedAssigneeIds.add(member.getId()));
+
+        project.getTasks().forEach(task -> {
+            User assignee = task.getAssignee();
+            if (assignee != null && !allowedAssigneeIds.contains(assignee.getId())) {
+                task.setAssignee(null);
+            }
+        });
     }
 }

@@ -15,6 +15,7 @@ import java.util.Map;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -245,6 +246,39 @@ class WorkFlowProApiIntegrationTest {
                         .content(objectMapper.writeValueAsString(Map.of("status", "COMPLETED"))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.completedAt").exists());
+
+        mockMvc.perform(put("/api/tasks/" + taskId)
+                        .header("Authorization", bearer(ownerToken))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of(
+                                "status", "TODO",
+                                "clearDueDate", true
+                        ))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("TODO"))
+                .andExpect(jsonPath("$.dueDate").value(nullValue()))
+                .andExpect(jsonPath("$.completedAt").value(nullValue()));
+
+        putJson(
+                "/api/projects/" + projectId,
+                ownerToken,
+                Map.of(
+                        "name", "Website Relaunch 2.1",
+                        "description", "Member removed from project",
+                        "memberIds", List.of()
+                ),
+                200
+        );
+
+        mockMvc.perform(get("/api/projects/" + projectId).header("Authorization", bearer(memberToken)))
+                .andExpect(status().isForbidden());
+
+        mockMvc.perform(get("/api/tasks/" + taskId).header("Authorization", bearer(memberToken)))
+                .andExpect(status().isForbidden());
+
+        mockMvc.perform(get("/api/tasks/" + taskId).header("Authorization", bearer(ownerToken)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.assignee").value(nullValue()));
 
         JsonNode disposableTask = postJson(
                 "/api/tasks",
