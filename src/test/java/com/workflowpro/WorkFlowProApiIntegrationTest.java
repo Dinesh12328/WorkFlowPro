@@ -42,7 +42,10 @@ class WorkFlowProApiIntegrationTest {
 
         mockMvc.perform(get("/index.html"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("WorkFlowPro")));
+                .andExpect(content().string(containsString("WorkFlowPro")))
+                .andExpect(content().string(containsString("projectModalTitle")))
+                .andExpect(content().string(containsString("projectSubmitButton")))
+                .andExpect(content().string(containsString("Close")));
 
         mockMvc.perform(get("/styles.css"))
                 .andExpect(status().isOk())
@@ -50,7 +53,10 @@ class WorkFlowProApiIntegrationTest {
 
         mockMvc.perform(get("/app.js"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("workflowpro.token")));
+                .andExpect(content().string(containsString("workflowpro.token")))
+                .andExpect(content().string(containsString("data-edit-project")))
+                .andExpect(content().string(containsString("data-project-task")))
+                .andExpect(content().string(containsString("data-task-status")));
     }
 
     @Test

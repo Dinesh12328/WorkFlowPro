@@ -114,7 +114,15 @@ function bindWorkspace() {
         if (jump) setView(jump.dataset.viewJump);
 
         const openButton = event.target.closest("[data-open-modal]");
-        if (openButton) openModal(openButton.dataset.openModal);
+        if (openButton) {
+            if (openButton.dataset.openModal === "projectModal") {
+                openProjectModal();
+            } else if (openButton.dataset.openModal === "taskModal") {
+                openTaskModal();
+            } else {
+                openModal(openButton.dataset.openModal);
+            }
+        }
 
         if (event.target.closest("[data-close-modal]")) closeModal();
     });
@@ -130,7 +138,7 @@ function bindWorkspace() {
         }
     });
 
-    $("#projectForm").addEventListener("submit", handleProjectCreate);
+    $("#projectForm").addEventListener("submit", handleProjectSubmit);
     $("#taskForm").addEventListener("submit", handleTaskCreate);
     $("#taskForm select[name='projectId']").addEventListener("change", renderTaskAssigneeOptions);
 
@@ -230,16 +238,17 @@ async function loadTasks() {
     applyTaskFilters(false);
 }
 
-async function handleProjectCreate(event) {
+async function handleProjectSubmit(event) {
     event.preventDefault();
     const form = event.currentTarget;
     const values = formValues(form);
     const memberIds = $$("input[name='projectMembers']:checked").map((input) => Number(input.value));
+    const projectId = values.id ? Number(values.id) : null;
 
     setBusy(form, true);
     try {
-        await api("/api/projects", {
-            method: "POST",
+        await api(projectId ? `/api/projects/${projectId}` : "/api/projects", {
+            method: projectId ? "PUT" : "POST",
             body: JSON.stringify({
                 name: values.name,
                 description: values.description || null,
@@ -250,7 +259,7 @@ async function handleProjectCreate(event) {
         closeModal();
         await refreshAll();
         setView("projects");
-        notify("Project created.", "success");
+        notify(projectId ? "Project updated." : "Project created.", "success");
     } catch (error) {
         notify(error.message, "error");
     } finally {
@@ -394,6 +403,11 @@ function renderBoard() {
 function renderTaskCard(task) {
     const assignee = task.assignee ? task.assignee.name : "Unassigned";
     const dueLabel = task.dueDate ? formatDate(task.dueDate) : "No deadline";
+    const nextStatusButton = task.status === "COMPLETED"
+        ? `<button class="small-button" type="button" data-task-status="TODO" data-task-id="${task.id}">Reopen</button>`
+        : `<button class="small-button" type="button" data-task-status="${task.status === "TODO" ? "IN_PROGRESS" : "COMPLETED"}" data-task-id="${task.id}">
+                ${task.status === "TODO" ? "Start" : "Complete"}
+           </button>`;
     return `
         <article class="task-card" draggable="true" data-task-id="${task.id}">
             <div class="task-top">
@@ -408,6 +422,10 @@ function renderTaskCard(task) {
                 <span class="pill">${dueLabel}</span>
                 <span class="pill">${STATUS_LABELS[task.status]}</span>
             </div>
+            <div class="task-card-actions">
+                <button class="small-button" type="button" data-open-task="${task.id}">Open</button>
+                ${nextStatusButton}
+            </div>
         </article>
     `;
 }
@@ -420,7 +438,7 @@ function renderProjects() {
             const memberNames = project.members.length
                 ? project.members.map((member) => avatar(member.name, member.email)).join("")
                 : `<small>No extra members yet</small>`;
-            const canDelete = state.me && project.owner.id === state.me.id;
+            const canManage = state.me && project.owner.id === state.me.id;
             return `
                 <article class="project-card">
                     <div class="project-card-header">
@@ -434,7 +452,9 @@ function renderProjects() {
                     <div class="avatar-list">${memberNames}</div>
                     <div class="drawer-actions">
                         <button class="small-button" type="button" data-project-board="${project.id}">View board</button>
-                        ${canDelete ? `<button class="small-button" type="button" data-delete-project="${project.id}">Delete</button>` : ""}
+                        <button class="small-button" type="button" data-project-task="${project.id}">New task</button>
+                        ${canManage ? `<button class="small-button" type="button" data-edit-project="${project.id}">Edit</button>` : ""}
+                        ${canManage ? `<button class="small-button danger-button" type="button" data-delete-project="${project.id}">Delete</button>` : ""}
                     </div>
                 </article>
             `;
@@ -495,7 +515,7 @@ function renderTaskDrawer() {
                 <h3>${escapeHtml(task.title)}</h3>
                 <small>${escapeHtml(task.projectName)} - ${task.assignee ? escapeHtml(task.assignee.name) : "Unassigned"}</small>
             </div>
-            <button class="icon-button" type="button" data-close-drawer aria-label="Close">&times;</button>
+            <button class="icon-button" type="button" data-close-drawer>Close</button>
         </div>
 
         <form class="drawer-section" data-task-edit-form data-task-id="${task.id}">
@@ -597,12 +617,13 @@ function renderProjectOptions() {
     }
 }
 
-function renderMemberChoices() {
+function renderMemberChoices(selectedMemberIds = []) {
+    const selected = new Set(selectedMemberIds.map((id) => String(id)));
     const candidates = state.users.filter((user) => !state.me || user.id !== state.me.id);
     $("#projectMembers").innerHTML = candidates.length
         ? candidates.map((user) => `
             <label class="choice-item">
-                <input type="checkbox" name="projectMembers" value="${user.id}">
+                <input type="checkbox" name="projectMembers" value="${user.id}" ${selected.has(String(user.id)) ? "checked" : ""}>
                 <span>${escapeHtml(user.name)} <small>(${escapeHtml(user.email)})</small></span>
             </label>
         `).join("")
@@ -630,6 +651,20 @@ function renderFilterAssigneeOptions() {
 }
 
 function handleBoardClick(event) {
+    const statusButton = event.target.closest("[data-task-status]");
+    if (statusButton) {
+        const status = statusButton.dataset.taskStatus;
+        const taskId = Number(statusButton.dataset.taskId);
+        updateTask(taskId, { status }, `Task moved to ${STATUS_LABELS[status]}.`);
+        return;
+    }
+
+    const openButton = event.target.closest("[data-open-task]");
+    if (openButton) {
+        openTaskDrawer(Number(openButton.dataset.openTask));
+        return;
+    }
+
     const card = event.target.closest("[data-task-id]");
     if (!card) return;
     openTaskDrawer(Number(card.dataset.taskId));
@@ -781,6 +816,18 @@ async function handleProjectClick(event) {
         return;
     }
 
+    const taskButton = event.target.closest("[data-project-task]");
+    if (taskButton) {
+        openTaskModal(Number(taskButton.dataset.projectTask));
+        return;
+    }
+
+    const editButton = event.target.closest("[data-edit-project]");
+    if (editButton) {
+        openProjectEditor(Number(editButton.dataset.editProject));
+        return;
+    }
+
     const deleteButton = event.target.closest("[data-delete-project]");
     if (deleteButton) {
         const projectId = Number(deleteButton.dataset.deleteProject);
@@ -849,19 +896,57 @@ function setView(view) {
     });
 }
 
+function openProjectModal(project = null) {
+    const form = $("#projectForm");
+    form.reset();
+    form.elements.id.value = project?.id || "";
+    form.elements.name.value = project?.name || "";
+    form.elements.description.value = project?.description || "";
+    $("#projectModalTitle").textContent = project ? "Edit project" : "Create project";
+    $("#projectSubmitButton").textContent = project ? "Save project" : "Create project";
+    renderMemberChoices(project?.members?.map((member) => member.id) || []);
+    openModal("projectModal");
+}
+
+function openProjectEditor(projectId) {
+    const project = state.projects.find((item) => item.id === projectId);
+    if (!project) {
+        notify("Project not found. Refresh and try again.", "error");
+        return;
+    }
+    openProjectModal(project);
+}
+
+function openTaskModal(projectId = null) {
+    if (!state.projects.length) {
+        notify("Create a project first, then add tasks.", "error");
+        openProjectModal();
+        return;
+    }
+    const form = $("#taskForm");
+    form.reset();
+    renderProjectOptions();
+    if (projectId && state.projects.some((project) => project.id === projectId)) {
+        form.elements.projectId.value = String(projectId);
+    }
+    renderTaskAssigneeOptions();
+    openModal("taskModal");
+}
+
 function openModal(id) {
     if (id === "taskModal" && !state.projects.length) {
         notify("Create a project first, then add tasks.", "error");
-        openModal("projectModal");
+        openProjectModal();
         return;
     }
     $("#modalBackdrop").hidden = false;
     $$("#modalBackdrop .modal").forEach((modal) => {
         modal.hidden = modal.id !== id;
     });
-    renderProjectOptions();
-    renderMemberChoices();
-    renderTaskAssigneeOptions();
+    if (id === "taskModal") {
+        renderProjectOptions();
+        renderTaskAssigneeOptions();
+    }
 }
 
 function closeModal() {

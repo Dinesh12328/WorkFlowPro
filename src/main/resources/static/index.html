@@ -308,11 +308,12 @@
         <div class="modal-header">
             <div>
                 <span class="eyebrow">Project</span>
-                <h3>Create project</h3>
+                <h3 id="projectModalTitle">Create project</h3>
             </div>
-            <button class="icon-button" type="button" data-close-modal aria-label="Close">&times;</button>
+            <button class="icon-button" type="button" data-close-modal>Close</button>
         </div>
         <form id="projectForm" class="form-stack compact">
+            <input name="id" type="hidden">
             <label>
                 Project name
                 <input name="name" required maxlength="150" placeholder="Website relaunch">
@@ -325,7 +326,7 @@
                 <span class="field-label">Members</span>
                 <div id="projectMembers" class="choice-list muted-box">No users loaded yet.</div>
             </div>
-            <button class="primary-button" type="submit">Create project</button>
+            <button id="projectSubmitButton" class="primary-button" type="submit">Create project</button>
         </form>
     </section>
 
@@ -335,7 +336,7 @@
                 <span class="eyebrow">Task</span>
                 <h3>Create task</h3>
             </div>
-            <button class="icon-button" type="button" data-close-modal aria-label="Close">&times;</button>
+            <button class="icon-button" type="button" data-close-modal>Close</button>
         </div>
         <form id="taskForm" class="form-stack compact">
             <label>
