@@ -450,7 +450,7 @@ function renderProjects() {
                     </div>
                     <p class="muted">${escapeHtml(project.description || "No description added.")}</p>
                     <div class="avatar-list">${memberNames}</div>
-                    <div class="drawer-actions">
+                    <div class="project-actions">
                         <button class="small-button" type="button" data-project-board="${project.id}">View board</button>
                         <button class="small-button" type="button" data-project-task="${project.id}">New task</button>
                         ${canManage ? `<button class="small-button" type="button" data-edit-project="${project.id}">Edit</button>` : ""}

@@ -57,7 +57,8 @@ class WorkFlowProApiIntegrationTest {
                 .andExpect(content().string(containsString("workflowpro.token")))
                 .andExpect(content().string(containsString("data-edit-project")))
                 .andExpect(content().string(containsString("data-project-task")))
-                .andExpect(content().string(containsString("data-task-status")));
+                .andExpect(content().string(containsString("data-task-status")))
+                .andExpect(content().string(containsString("project-actions")));
     }
 
     @Test
