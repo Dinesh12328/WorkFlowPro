@@ -1,0 +1,66 @@
+services:
+  - type: pserv
+    runtime: image
+    name: workflowpro-mysql
+    region: singapore
+    plan: starter
+    image:
+      url: docker.io/library/mysql:8.4
+    disk:
+      name: workflowpro-mysql-data
+      mountPath: /var/lib/mysql
+      sizeGB: 10
+    envVars:
+      - key: MYSQL_DATABASE
+        value: workflowpro
+      - key: MYSQL_USER
+        value: workflowpro
+      - key: MYSQL_PASSWORD
+        generateValue: true
+      - key: MYSQL_ROOT_PASSWORD
+        generateValue: true
+
+  - type: web
+    runtime: docker
+    name: workflowpro-api
+    region: singapore
+    plan: starter
+    branch: main
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    autoDeployTrigger: commit
+    healthCheckPath: /
+    envVars:
+      - key: PORT
+        value: "8080"
+      - key: SPRING_PROFILES_ACTIVE
+        value: mysql
+      - key: DB_HOST
+        fromService:
+          type: pserv
+          name: workflowpro-mysql
+          property: host
+      - key: DB_PORT
+        fromService:
+          type: pserv
+          name: workflowpro-mysql
+          property: port
+      - key: DB_NAME
+        value: workflowpro
+      - key: DB_USERNAME
+        value: workflowpro
+      - key: DB_PASSWORD
+        fromService:
+          type: pserv
+          name: workflowpro-mysql
+          envVarKey: MYSQL_PASSWORD
+      - key: DDL_AUTO
+        value: update
+      - key: JWT_SECRET
+        generateValue: true
+      - key: MAIL_ENABLED
+        value: "false"
+      - key: MAIL_HOST
+        value: smtp.gmail.com
+      - key: MAIL_PORT
+        value: "587"

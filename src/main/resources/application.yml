@@ -30,6 +30,7 @@ spring:
             enable: true
 
 server:
+  port: ${PORT:8080}
   error:
     include-message: never
 

@@ -1,0 +1,9 @@
+target/
+.git/
+.idea/
+.codex/
+.agents/
+outputs/
+work/
+.env
+*.log

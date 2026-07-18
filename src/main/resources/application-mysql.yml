@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: ${DB_URL:jdbc:mysql://localhost:3306/workflowpro?createDatabaseIfNotExist=true&serverTimezone=UTC}
+    url: ${DB_URL:jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:workflowpro}?createDatabaseIfNotExist=true&serverTimezone=UTC&allowPublicKeyRetrieval=true&useSSL=false}
     username: ${DB_USERNAME:workflowpro}
     password: ${DB_PASSWORD:workflowpro}
     driver-class-name: com.mysql.cj.jdbc.Driver

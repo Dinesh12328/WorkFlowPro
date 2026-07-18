@@ -282,6 +282,58 @@ Stop containers and remove the database volume:
 docker compose down -v
 ```
 
+## Deploy on Render
+
+Use `render.yaml` for Render deployment. Do not select `compose.yaml` as the Blueprint file because `compose.yaml` is only for local Docker Compose.
+
+Render deployment creates:
+
+- `workflowpro-api` - public Docker web service for the Spring Boot app and frontend.
+- `workflowpro-mysql` - private MySQL service with a persistent disk.
+
+Important: the MySQL private service and disk use paid Render resources. If you need a free-only demo, deploy only the web service with the default H2 database, but data will reset after restarts.
+
+### Render Blueprint steps
+
+1. Push the latest code to GitHub.
+2. Open Render.
+3. Click **New**.
+4. Choose **Blueprint**.
+5. Select this repository:
+
+```text
+Dinesh12328/WorkFlowPro
+```
+
+6. Set the branch:
+
+```text
+main
+```
+
+7. For **Blueprint Path**, use:
+
+```text
+render.yaml
+```
+
+You can also leave the path empty because `render.yaml` is in the repository root.
+
+8. Click **Apply** or **Deploy Blueprint**.
+9. Wait until both services are live.
+10. Open the public URL for `workflowpro-api`.
+
+After opening the URL, register a user and start creating projects and tasks.
+
+### If Render shows a Blueprint error
+
+Check these items:
+
+- Blueprint Path must be `render.yaml`, not `compose.yaml`.
+- The repo branch must be `main`.
+- The MySQL private service and API service must be in the same region.
+- Wait for `workflowpro-mysql` to finish starting before retrying the API deploy.
+
 ## Run in IntelliJ IDEA
 
 For easy local development, run the application normally. The default configuration uses an H2 in-memory database, so MySQL is not required.
