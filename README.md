@@ -1,120 +1,107 @@
-# WorkFlowPro Task Management System
+# WorkFlowPro
 
-WorkFlowPro is a task and project management web application. It helps users create projects, add team members, assign tasks, track task progress, manage deadlines, add comments, attach useful links, and view project activity from a dashboard.
+WorkFlowPro is a full-stack task and project management application for organizing project work, assigning tasks, tracking progress, and managing team activity from one interactive workspace.
 
-The project contains:
+The application combines a Spring Boot REST API with a browser-based frontend. Users can create projects, add members, create and assign tasks, update task status, add comments, attach useful links, receive assignment notifications, and monitor project progress from the dashboard.
 
-- A Spring Boot REST API backend.
-- A browser-based interactive frontend served from the same application.
-- H2 support for quick local running in IntelliJ.
-- MySQL support for Docker and production-style running.
+## Project summary
 
-For detailed setup and deployment instructions, see:
+| Area | Details |
+|---|---|
+| Application type | Task and project management system |
+| Backend | Java, Spring Boot, Spring Data JPA |
+| Frontend | HTML, CSS, JavaScript single-page interface |
+| Security | Spring Security with JWT authentication |
+| Databases | H2 for local development, MySQL for Docker/Render |
+| Deployment | Docker, Docker Compose, Render Blueprint |
 
-```text
-DEPLOYMENT_GUIDE.md
-```
+Detailed setup and deployment instructions are available in [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md).
 
-After starting the application, open:
+## Core features
 
-```text
-http://localhost:8080/
-```
+- User registration and login
+- JWT-based protected API access
+- Project creation, update, listing, and deletion
+- Project member management
+- Task creation inside projects
+- Task assignment to project owners or members
+- Task priority levels: `LOW`, `MEDIUM`, `HIGH`
+- Task status workflow: `TODO`, `IN_PROGRESS`, `COMPLETED`
+- Task filtering by status, priority, due date, project, and assignee
+- Kanban-style task board
+- Task detail drawer for editing, comments, and attachments
+- Comment support for task discussions
+- Attachment-link support for related files or references
+- Assignment notifications
+- Dashboard statistics for projects, tasks, deadlines, and unread notifications
 
-## What this application does
-
-WorkFlowPro is built around a simple project workflow:
+## Application workflow
 
 1. A user registers or logs in.
 2. The user creates a project.
-3. Project members can be added.
+3. Project members are added when collaboration is needed.
 4. Tasks are created inside the project.
-5. Tasks can be assigned to project users.
-6. Task status can move from `TODO` to `IN_PROGRESS` to `COMPLETED`.
-7. Comments and attachment links can be added to tasks.
-8. Notifications are created when a task is assigned.
-9. The dashboard shows the current project/task summary.
+5. Tasks are assigned to the project owner or project members.
+6. Tasks move through `TODO`, `IN_PROGRESS`, and `COMPLETED`.
+7. Users add comments or attachment links to task records.
+8. Assignment notifications appear for assigned users.
+9. The dashboard summarizes project and task activity.
 
-## Main modules
+## Architecture overview
 
-### User module
+```text
+Browser UI
+   |
+   | HTTP / JSON
+   v
+Spring Boot REST API
+   |
+   | Spring Data JPA
+   v
+H2 or MySQL Database
+```
 
-Handles registration, login, current-user details, and user search.
+### Frontend
 
-### Project module
+The frontend is served directly from the Spring Boot application.
 
-Handles project creation, project listing, project details, project updates, project members, and project deletion.
+Frontend files:
 
-### Task module
-
-Handles task creation, task assignment, priority, status, due date, task filtering, task editing, and task deletion.
-
-### Comment module
-
-Allows users to add and view comments on tasks.
-
-### Attachment module
-
-Stores attachment metadata or external file links for a task.
-
-### Notification module
-
-Creates and displays task assignment notifications.
-
-### Dashboard module
-
-Shows project and task statistics for the logged-in user.
-
-## Frontend overview
-
-The frontend is a single-page interface built with HTML, CSS, and JavaScript. It uses the backend APIs directly.
+```text
+src/main/resources/static/index.html
+src/main/resources/static/styles.css
+src/main/resources/static/app.js
+```
 
 Main frontend screens:
 
-- Login and registration screen
-- Dashboard screen
-- Kanban task board
-- Project list
-- Team/user list
-- Notifications list
+- Authentication page
+- Dashboard
+- Task board
+- Project management view
+- Team/user view
+- Notifications view
 - Task detail drawer
-- Project and task creation modals
+- Project and task forms
 
-Main frontend actions:
+### Backend
 
-- Register and login
-- Create projects
-- Create tasks
-- Drag tasks between board columns
-- Edit task details
-- Add comments
-- Add attachment links
-- Filter/search tasks
-- Mark notifications as read
-- Refresh workspace data
+The backend exposes REST APIs for authentication, users, projects, tasks, comments, attachments, notifications, and dashboard statistics.
 
-## Backend overview
-
-The backend is a Spring Boot application with secured REST APIs. Authentication uses JWT. Most API routes require a bearer token.
-
-Public routes:
+Main backend packages:
 
 ```text
-/
-/index.html
-/styles.css
-/app.js
-/api/auth/register
-/api/auth/login
+controller
+service
+repository
+entity
+dto
+security
+config
+exception
 ```
 
-Protected routes require:
-
-```http
-Authorization: Bearer <token>
-```
-
-## Data model
+## Domain model
 
 Main entities:
 
@@ -122,55 +109,74 @@ Main entities:
 - `Project`
 - `Task`
 - `Comment`
-- `Notification`
 - `Attachment`
+- `Notification`
 
-Main task values:
+Important relationships:
 
-```text
-Priority: LOW, MEDIUM, HIGH
-Status: TODO, IN_PROGRESS, COMPLETED
+- A user can own many projects.
+- A project can have many members.
+- A project can have many tasks.
+- A task belongs to one project.
+- A task can be assigned to one user.
+- A task can have many comments and attachments.
+- A notification belongs to one recipient.
+
+## Access rules
+
+- Public users can access the frontend, registration, and login.
+- Authenticated users can access protected API routes with a JWT token.
+- A user can view projects they own or belong to.
+- Only the project owner can update or delete a project.
+- A task can only be assigned to the project owner or a project member.
+- Comments and attachments follow task/project access rules.
+- Notifications are visible only to the notification recipient.
+
+Protected API routes require:
+
+```http
+Authorization: Bearer <token>
 ```
 
-## API endpoints
+## API overview
 
 ### Authentication
 
-| Method | Endpoint | Use |
+| Method | Endpoint | Description |
 |---|---|---|
-| `POST` | `/api/auth/register` | Register user |
-| `POST` | `/api/auth/login` | Login user |
+| `POST` | `/api/auth/register` | Create a user account |
+| `POST` | `/api/auth/login` | Login and receive JWT token |
 
 ### Users
 
-| Method | Endpoint | Use |
+| Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/api/users/me` | Current user |
+| `GET` | `/api/users/me` | Get current user profile |
 | `GET` | `/api/users` | List/search users |
 
 ### Projects
 
-| Method | Endpoint | Use |
+| Method | Endpoint | Description |
 |---|---|---|
 | `POST` | `/api/projects` | Create project |
 | `GET` | `/api/projects` | List accessible projects |
-| `GET` | `/api/projects/{id}` | Get project by ID |
+| `GET` | `/api/projects/{id}` | Get project details |
 | `PUT` | `/api/projects/{id}` | Update project |
 | `DELETE` | `/api/projects/{id}` | Delete project |
 
 ### Tasks
 
-| Method | Endpoint | Use |
+| Method | Endpoint | Description |
 |---|---|---|
 | `POST` | `/api/tasks` | Create task |
 | `GET` | `/api/tasks` | List/filter tasks |
-| `GET` | `/api/tasks/{id}` | Get task by ID |
+| `GET` | `/api/tasks/{id}` | Get task details |
 | `PUT` | `/api/tasks/{id}` | Update task |
 | `DELETE` | `/api/tasks/{id}` | Delete task |
-| `GET` | `/api/tasks/status/{status}` | List by status |
-| `GET` | `/api/tasks/priority/{priority}` | List by priority |
+| `GET` | `/api/tasks/status/{status}` | List tasks by status |
+| `GET` | `/api/tasks/priority/{priority}` | List tasks by priority |
 
-Task filter parameters:
+Supported task filter parameters:
 
 ```text
 status
@@ -186,48 +192,39 @@ sort
 
 ### Comments
 
-| Method | Endpoint | Use |
+| Method | Endpoint | Description |
 |---|---|---|
 | `POST` | `/api/tasks/{taskId}/comments` | Add task comment |
 | `GET` | `/api/tasks/{taskId}/comments` | List task comments |
 
 ### Attachments
 
-| Method | Endpoint | Use |
+| Method | Endpoint | Description |
 |---|---|---|
 | `POST` | `/api/tasks/{taskId}/attachments` | Add attachment link |
 | `GET` | `/api/tasks/{taskId}/attachments` | List attachment links |
 
 ### Notifications
 
-| Method | Endpoint | Use |
+| Method | Endpoint | Description |
 |---|---|---|
 | `GET` | `/api/notifications` | List notifications |
 | `PATCH` | `/api/notifications/{id}/read` | Mark notification as read |
 
 ### Dashboard
 
-| Method | Endpoint | Use |
+| Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/api/dashboard/stats` | Dashboard statistics |
+| `GET` | `/api/dashboard/stats` | Get dashboard statistics |
 
-## Example requests
+## Sample request payloads
 
 ### Register
 
 ```json
 {
-  "name": "Dinesh",
-  "email": "dinesh@example.com",
-  "password": "password123"
-}
-```
-
-### Login
-
-```json
-{
-  "email": "dinesh@example.com",
+  "name": "Alex Morgan",
+  "email": "alex@example.com",
   "password": "password123"
 }
 ```
@@ -237,7 +234,7 @@ sort
 ```json
 {
   "name": "Website Relaunch",
-  "description": "Plan and track all launch tasks",
+  "description": "Plan, assign, and track all work for the website relaunch.",
   "memberIds": [2, 3]
 }
 ```
@@ -247,7 +244,7 @@ sort
 ```json
 {
   "title": "Prepare launch checklist",
-  "description": "Write the final launch tasks",
+  "description": "Create the final checklist for launch readiness.",
   "priority": "HIGH",
   "status": "TODO",
   "dueDate": "2026-07-30",
@@ -256,107 +253,20 @@ sort
 }
 ```
 
-## Run with Docker
+## Run locally with IntelliJ IDEA
 
-Use Docker when you want the full application with MySQL. The Docker setup automatically runs the Spring Boot app with the `mysql` profile.
+The default local run uses H2, so MySQL is not required.
 
-1. Create a `.env` file from `.env.example`.
-
-2. Start the app:
-
-```bash
-docker compose up --build
-```
-
+1. Open the project in IntelliJ IDEA.
+2. Wait for Maven dependencies to load.
 3. Open:
-
-```text
-http://localhost:8080/
-```
-
-4. Register a user and start using the application.
-
-Stop containers:
-
-```bash
-docker compose down
-```
-
-Stop containers and remove the database volume:
-
-```bash
-docker compose down -v
-```
-
-## Deploy on Render
-
-Use `render.yaml` for Render deployment. Do not select `compose.yaml` as the Blueprint file because `compose.yaml` is only for local Docker Compose.
-
-Render deployment creates:
-
-- `workflowpro-api` - public Docker web service for the Spring Boot app and frontend.
-- `workflowpro-mysql` - private MySQL service with a persistent disk.
-
-Important: the MySQL private service and disk use paid Render resources. If you need a free-only demo, deploy only the web service with the default H2 database, but data will reset after restarts.
-
-### Render Blueprint steps
-
-1. Push the latest code to GitHub.
-2. Open Render.
-3. Click **New**.
-4. Choose **Blueprint**.
-5. Select this repository:
-
-```text
-Dinesh12328/WorkFlowPro
-```
-
-6. Set the branch:
-
-```text
-main
-```
-
-7. For **Blueprint Path**, use:
-
-```text
-render.yaml
-```
-
-You can also leave the path empty because `render.yaml` is in the repository root.
-
-8. Click **Apply** or **Deploy Blueprint**.
-9. Wait until both services are live.
-10. Open the public URL for `workflowpro-api`.
-
-After opening the URL, register a user and start creating projects and tasks.
-
-### If Render shows a Blueprint error
-
-Check these items:
-
-- Blueprint Path must be `render.yaml`, not `compose.yaml`.
-- The repo branch must be `main`.
-- The MySQL private service and API service must be in the same region.
-- Wait for `workflowpro-mysql` to finish starting before retrying the API deploy.
-
-## Run in IntelliJ IDEA
-
-For easy local development, run the application normally. The default configuration uses an H2 in-memory database, so MySQL is not required.
-
-Steps:
-
-1. Open IntelliJ IDEA.
-2. Open this project folder.
-3. Wait for Maven to import dependencies.
-4. Open:
 
 ```text
 src/main/java/com/workflowpro/WorkflowProApplication.java
 ```
 
-5. Run the application.
-6. Open:
+4. Run the application.
+5. Open:
 
 ```text
 http://localhost:8080/
@@ -371,57 +281,78 @@ http://localhost:8080/h2-console
 H2 connection:
 
 ```text
-JDBC URL: jdbc:h2:mem:workflowpro-dev
+JDBC URL: jdbc:h2:mem:workflowpro-dev;MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE
 User: sa
 Password:
 ```
 
-## Run with local MySQL
-
-If MySQL is already running on your computer:
-
-```bash
-mvn -Dspring-boot.run.profiles=mysql spring-boot:run
-```
-
-Default database settings:
+If port `8080` is busy, run with another port:
 
 ```text
-Database: workflowpro
-Username: workflowpro
-Password: workflowpro
+-Dserver.port=8081
 ```
 
-In IntelliJ IDEA, use this VM option when you specifically want local MySQL instead of H2:
+Then open:
 
 ```text
--Dspring.profiles.active=mysql
+http://localhost:8081/
 ```
 
-## Run tests
+## Run locally with Docker
+
+Use Docker when testing the full application with MySQL.
+
+1. Create a `.env` file from `.env.example`.
+2. Start the services:
 
 ```bash
-mvn test
+docker compose up --build
 ```
 
-The tests use H2 database and disabled email sending.
+3. Open:
 
-Current integration tests check:
+```text
+http://localhost:8080/
+```
 
-- Frontend public files
-- Protected API access
-- Register and login
-- Duplicate account handling
-- Wrong password handling
-- User search
-- Project create/list/get/update/delete
-- Task create/list/filter/get/update/delete
-- Comments
-- Attachments
-- Notifications
-- Dashboard statistics
-- Project access rules
-- Invalid task assignment rules
+Stop containers:
+
+```bash
+docker compose down
+```
+
+Stop containers and remove local MySQL data:
+
+```bash
+docker compose down -v
+```
+
+## Deploy on Render
+
+Render deployment uses the Blueprint file:
+
+```text
+render.yaml
+```
+
+Do not use `compose.yaml` for Render. `compose.yaml` is only for local Docker Compose.
+
+Render creates:
+
+- `workflowpro-api` - public Spring Boot web service.
+- `workflowpro-mysql` - private MySQL service with persistent disk.
+
+Render Blueprint settings:
+
+```text
+Blueprint Name: WorkFlowPro
+Branch: main
+Blueprint Path: render.yaml
+```
+
+After deployment, open the public URL for `workflowpro-api`, register a user, and begin using the workspace.
+
+For complete Render deployment instructions, see [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md).
 
 ## Configuration
 
@@ -429,30 +360,51 @@ Common environment variables:
 
 | Variable | Description |
 |---|---|
+| `PORT` | HTTP port used by Spring Boot |
+| `SPRING_PROFILES_ACTIVE` | Active Spring profile, for example `mysql` |
 | `MYSQL_DATABASE` | MySQL database name |
 | `MYSQL_USER` | MySQL username |
 | `MYSQL_PASSWORD` | MySQL password |
 | `MYSQL_ROOT_PASSWORD` | MySQL root password |
-| `DB_URL` | Spring datasource URL |
+| `DB_HOST` | Database host |
+| `DB_PORT` | Database port |
+| `DB_NAME` | Database name |
+| `DB_URL` | Full Spring datasource URL override |
 | `DB_USERNAME` | Spring datasource username |
 | `DB_PASSWORD` | Spring datasource password |
-| `DB_DRIVER` | Spring datasource driver class |
-| `DDL_AUTO` | Hibernate schema update mode |
+| `DDL_AUTO` | Hibernate schema mode |
 | `JWT_SECRET` | JWT signing secret |
-| `JWT_EXPIRATION` | JWT expiry time |
-| `MAIL_ENABLED` | Enable/disable email notification |
+| `JWT_EXPIRATION` | JWT expiration time |
+| `MAIL_ENABLED` | Enables/disables email notification |
 | `MAIL_HOST` | SMTP host |
 | `MAIL_PORT` | SMTP port |
 | `MAIL_USERNAME` | SMTP username |
 | `MAIL_PASSWORD` | SMTP password |
 
-## Access rules
+## Run tests
 
-- A user can view projects they own or belong to.
-- Only the project owner can update/delete a project.
-- A task can only be assigned to the project owner or a project member.
-- Comments and attachments follow task/project access.
-- Notifications are visible only to the notification recipient.
+Run:
+
+```bash
+mvn test
+```
+
+The integration tests cover:
+
+- Public frontend assets
+- Protected route security
+- Registration and login
+- Duplicate account handling
+- User search
+- Project create/list/get/update/delete
+- Task create/list/filter/get/update/delete
+- Task status and priority filtering
+- Comments
+- Attachments
+- Notifications
+- Dashboard statistics
+- Project access rules
+- Task assignment validation
 
 ## Troubleshooting
 
@@ -464,47 +416,47 @@ Open the frontend URL:
 http://localhost:8080/
 ```
 
-Do not open protected API routes directly before login, for example:
+Protected API URLs such as `/api/projects` require a JWT token and should be accessed after login.
 
-```text
-http://localhost:8080/api/projects
-```
+### Application does not start in IntelliJ
 
-Protected API routes need a JWT token.
-
-### App does not start in IntelliJ
-
-The default IntelliJ run uses H2 and should not need MySQL. If you still see a MySQL access error, check the run configuration and remove this VM option:
+The default run uses H2. If the application tries to connect to MySQL unexpectedly, remove this VM option from the run configuration:
 
 ```text
 -Dspring.profiles.active=mysql
 ```
 
-After removing it, run the application again and open:
-
-```text
-http://localhost:8080/
-```
-
 ### Docker port is already used
 
-Ports `8080` or `3306` may already be in use. Stop the other application or change the port mapping in `compose.yaml`.
+Ports `8080` or `3306` may already be in use. Stop the other service or change the port mapping in `compose.yaml`.
+
+### Render Blueprint fails
+
+Check that Render is using:
+
+```text
+Blueprint Path: render.yaml
+```
+
+Do not point Render to:
+
+```text
+compose.yaml
+```
 
 ### Data is empty after login
 
-Project data is user-based. A user only sees projects they own or projects where they are added as a member.
+Project data is user-specific. A user sees projects they own or projects where they are added as a member.
 
 ### Emails are not sent
 
-Email sending is disabled by default.
-
-Enable it with:
+Email sending is disabled by default:
 
 ```text
-MAIL_ENABLED=true
+MAIL_ENABLED=false
 ```
 
-Then configure SMTP values in `.env`.
+Set SMTP environment variables and change `MAIL_ENABLED` to `true` when email delivery is required.
 
 ## Repository
 
