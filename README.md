@@ -9,6 +9,12 @@ The project contains:
 - H2 support for quick local running in IntelliJ.
 - MySQL support for Docker and production-style running.
 
+For detailed setup and deployment instructions, see:
+
+```text
+DEPLOYMENT_GUIDE.md
+```
+
 After starting the application, open:
 
 ```text
