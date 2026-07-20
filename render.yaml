@@ -41,10 +41,7 @@ services:
           name: workflowpro-mysql
           property: host
       - key: DB_PORT
-        fromService:
-          type: pserv
-          name: workflowpro-mysql
-          property: port
+        value: "3306"
       - key: DB_NAME
         value: workflowpro
       - key: DB_USERNAME
