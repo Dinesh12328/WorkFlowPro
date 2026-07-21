@@ -46,6 +46,7 @@ class WorkFlowProApiIntegrationTest {
                 .andExpect(content().string(containsString("WorkFlowPro")))
                 .andExpect(content().string(containsString("projectModalTitle")))
                 .andExpect(content().string(containsString("projectSubmitButton")))
+                .andExpect(content().string(containsString("No task selected")))
                 .andExpect(content().string(containsString("Close")));
 
         mockMvc.perform(get("/styles.css"))
@@ -58,6 +59,7 @@ class WorkFlowProApiIntegrationTest {
                 .andExpect(content().string(containsString("data-edit-project")))
                 .andExpect(content().string(containsString("data-project-task")))
                 .andExpect(content().string(containsString("data-task-status")))
+                .andExpect(content().string(containsString("data-dashboard-status")))
                 .andExpect(content().string(containsString("project-actions")));
     }
 

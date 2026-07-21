@@ -13,23 +13,23 @@ const STAT_KEYS = [
 const VIEW_META = {
     dashboard: {
         title: "Dashboard",
-        subtitle: "A live overview of your projects, tasks, deadlines, and notifications."
+        subtitle: "Project health, deadlines, and activity at a glance."
     },
     board: {
         title: "Task board",
-        subtitle: "Drag tasks between columns, filter work, and open task cards for details."
+        subtitle: "Prioritize work, update status, and open task details without leaving the board."
     },
     projects: {
         title: "Projects",
-        subtitle: "Create projects, review owners and members, and jump into project work."
+        subtitle: "Manage ownership, members, and the tasks attached to each project."
     },
     notifications: {
         title: "Notifications",
-        subtitle: "Track assignment alerts and mark updates as read."
+        subtitle: "Review assignment updates and clear read items."
     },
     team: {
         title: "Team",
-        subtitle: "View registered users who can be added to projects and assigned tasks."
+        subtitle: "Browse users available for project membership and task assignment."
     }
 };
 
@@ -52,7 +52,8 @@ const state = {
     comments: new Map(),
     attachments: new Map(),
     selectedTaskId: null,
-    refreshTimer: null
+    refreshTimer: null,
+    suppressFilterResetEvent: false
 };
 
 const $ = (selector) => document.querySelector(selector);
@@ -149,10 +150,12 @@ function bindWorkspace() {
 
     $("#filterForm").addEventListener("input", debounce(applyTaskFilters, 180));
     $("#filterForm").addEventListener("change", applyTaskFilters);
-
-    $("#clearFiltersButton").addEventListener("click", () => {
-        $("#filterForm").reset();
-        applyTaskFilters();
+    $("#filterForm").addEventListener("reset", () => {
+        if (state.suppressFilterResetEvent) return;
+        window.setTimeout(() => {
+            resetTaskFilterValues($("#filterForm"));
+            applyTaskFilters();
+        }, 0);
     });
 
     $("#kanbanBoard").addEventListener("click", handleBoardClick);
@@ -166,6 +169,7 @@ function bindWorkspace() {
     $("#taskDrawer").addEventListener("submit", handleDrawerSubmit);
     $("#notificationsList").addEventListener("click", handleNotificationClick);
     $("#dashboardNotifications").addEventListener("click", handleNotificationClick);
+    $("#dashboardBoardSummary").addEventListener("click", handleDashboardSummaryClick);
     $("#dueSoonList").addEventListener("click", handleOpenTaskClick);
     $("#projectList").addEventListener("click", handleProjectClick);
 }
@@ -328,6 +332,21 @@ function applyTaskFilters(render = true) {
     if (render) renderWorkspace();
 }
 
+function clearTaskFilters(render = true) {
+    const form = $("#filterForm");
+    state.suppressFilterResetEvent = true;
+    form.reset();
+    state.suppressFilterResetEvent = false;
+    resetTaskFilterValues(form);
+    if (render) applyTaskFilters();
+}
+
+function resetTaskFilterValues(form) {
+    ["search", "status", "priority", "projectId", "assigneeId", "dueFrom", "dueTo"].forEach((name) => {
+        if (form.elements[name]) form.elements[name].value = "";
+    });
+}
+
 function renderWorkspace() {
     renderSession();
     renderStats();
@@ -357,11 +376,11 @@ function renderStats() {
 function renderDashboard() {
     const counts = countByStatus(state.allTasks);
     $("#dashboardBoardSummary").innerHTML = Object.entries(STATUS_LABELS).map(([status, label]) => `
-        <article class="summary-card">
+        <button class="summary-card" type="button" data-dashboard-status="${status}" aria-label="Open ${label} tasks">
             <small>${label}</small>
             <strong>${counts[status] || 0}</strong>
             <span class="pill">${status.replaceAll("_", " ")}</span>
-        </article>
+        </button>
     `).join("");
 
     const today = localDateString(new Date());
@@ -423,7 +442,7 @@ function renderTaskCard(task) {
                 <span class="pill">${STATUS_LABELS[task.status]}</span>
             </div>
             <div class="task-card-actions">
-                <button class="small-button" type="button" data-open-task="${task.id}">Open</button>
+                <button class="small-button" type="button" data-open-task="${task.id}">Details</button>
                 ${nextStatusButton}
             </div>
         </article>
@@ -494,9 +513,13 @@ function renderTaskDrawer() {
         drawer.classList.remove("open");
         drawer.innerHTML = `
             <div class="drawer-empty">
-                <span class="drawer-icon">Open</span>
-                <h3>Select a task</h3>
-                <p>Open any task card to edit details, add comments, or attach useful links.</p>
+                <span class="drawer-kicker">Task details</span>
+                <h3>No task selected</h3>
+                <p>Select a task from the board or create a new task to manage details, comments, and links.</p>
+                <div class="drawer-empty-actions">
+                    <button class="primary-button" type="button" data-open-modal="taskModal">Create task</button>
+                    <button class="secondary-button" type="button" data-view-jump="board">View board</button>
+                </div>
             </div>
         `;
         return;
@@ -676,6 +699,15 @@ function handleOpenTaskClick(event) {
     openTaskDrawer(Number(button.dataset.openTask));
 }
 
+function handleDashboardSummaryClick(event) {
+    const button = event.target.closest("[data-dashboard-status]");
+    if (!button) return;
+    clearTaskFilters(false);
+    $("#filterForm select[name='status']").value = button.dataset.dashboardStatus;
+    applyTaskFilters();
+    setView("board");
+}
+
 function handleDragStart(event) {
     const card = event.target.closest(".task-card");
     if (!card) return;
@@ -810,6 +842,7 @@ async function handleNotificationClick(event) {
 async function handleProjectClick(event) {
     const boardButton = event.target.closest("[data-project-board]");
     if (boardButton) {
+        clearTaskFilters(false);
         $("#filterForm select[name='projectId']").value = boardButton.dataset.projectBoard;
         applyTaskFilters();
         setView("board");
@@ -1101,7 +1134,7 @@ function miniTaskItem(task) {
                 <strong>${escapeHtml(task.title)}</strong>
                 <small>${escapeHtml(task.projectName)} - ${task.dueDate ? formatDate(task.dueDate) : "No deadline"}</small>
             </div>
-            <button class="small-button" type="button" data-open-task="${task.id}">Open</button>
+            <button class="small-button" type="button" data-open-task="${task.id}">Details</button>
         </div>
     `;
 }

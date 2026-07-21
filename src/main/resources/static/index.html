@@ -15,16 +15,16 @@
     <section id="authView" class="auth-shell">
         <article class="hero-card">
             <span class="eyebrow">WorkFlowPro workspace</span>
-            <h1>Manage projects, tasks, comments, and deadlines from one interactive dashboard.</h1>
+            <h1>Plan work, assign tasks, and track delivery in one focused workspace.</h1>
             <p>
-                Sign in to open the live workspace. The interface connects directly to the Spring Boot APIs,
-                keeps your login session locally, and refreshes your project data automatically.
+                WorkFlowPro brings projects, assignees, deadlines, comments, attachments, and notifications
+                into a clean task management interface backed by Spring Boot APIs.
             </p>
             <div class="hero-grid">
-                <span>Kanban board</span>
-                <span>Drag status</span>
-                <span>Task drawer</span>
-                <span>Live stats</span>
+                <span>Projects</span>
+                <span>Task board</span>
+                <span>Comments</span>
+                <span>Notifications</span>
             </div>
         </article>
 
@@ -33,7 +33,7 @@
                 <span class="brand-mark">W</span>
                 <div>
                     <strong>WorkFlowPro</strong>
-                    <span>Task management system</span>
+                    <span>Project workspace</span>
                 </div>
             </div>
 
@@ -57,7 +57,7 @@
             <form id="registerForm" class="form-stack" hidden>
                 <label>
                     Name
-                    <input name="name" type="text" autocomplete="name" required placeholder="Dinesh">
+                    <input name="name" type="text" autocomplete="name" required placeholder="Alex Morgan">
                 </label>
                 <label>
                     Email
@@ -240,7 +240,7 @@
                         </label>
                         <div class="toolbar-actions">
                             <button class="primary-button" type="submit">Apply</button>
-                            <button class="secondary-button" id="clearFiltersButton" type="button">Clear</button>
+                            <button class="secondary-button" id="clearFiltersButton" type="reset">Clear</button>
                         </div>
                     </form>
                 </article>
@@ -295,9 +295,13 @@
 
         <aside id="taskDrawer" class="task-drawer" aria-live="polite">
             <div class="drawer-empty">
-                <span class="drawer-icon">Open</span>
-                <h3>Select a task</h3>
-                <p>Open any task card to edit details, add comments, or attach useful links.</p>
+                <span class="drawer-kicker">Task details</span>
+                <h3>No task selected</h3>
+                <p>Select a task from the board or create a new task to manage details, comments, and links.</p>
+                <div class="drawer-empty-actions">
+                    <button class="primary-button" type="button" data-open-modal="taskModal">Create task</button>
+                    <button class="secondary-button" type="button" data-view-jump="board">View board</button>
+                </div>
             </div>
         </aside>
     </section>
